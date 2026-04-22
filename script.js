@@ -37,7 +37,7 @@ const elements = {
 };
 
 // Register Events
-playground.addEventListener("click", handlePlankClick);
+elements.playground.addEventListener("click", handlePlankClick);
 
 function handlePlankClick(e) {
   const pgRect = elements.playground.getBoundingClientRect();
@@ -81,7 +81,7 @@ function spawnWeight(posX, posY, weight, edge) {
     COLORS[Math.min(weight - 1, COLORS.length - 1)];
   weightElement.style.width = `${edge}px`;
   weightElement.style.height = `${edge}px`;
-  playground.appendChild(weightElement);
+  elements.playground.appendChild(weightElement);
   return weightElement;
 }
 
@@ -164,7 +164,7 @@ function animate() {
   const pivotY = plankRect.top + plankRect.height / 2 - pgRect.top;
 
   const { angle: currentAngle } = computeStats();
-  
+
   for (let i = state.falling.length - 1; i >= 0; i--) {
     const w = state.falling[i];
     w.vy = (w.vy ?? 0) + GRAVITY;
