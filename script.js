@@ -36,14 +36,19 @@ const elements = {
   rightCount: document.getElementById("right-count"),
   resetBtn: document.getElementById("reset-btn"),
   undoBtn: document.getElementById("undo-btn"),
+  pauseBtn: document.getElementById("pause-btn"),
+  pauseBanner: document.getElementById("pause-banner"),
 };
 
 // Register Events
-elements.playground.addEventListener("click", handlePlankClick);
+elements.playground.addEventListener("click", handlePlaygroundClick);
 elements.resetBtn.addEventListener("click", handleReset);
 elements.undoBtn.addEventListener("click", handleUndo);
+elements.pauseBtn.addEventListener("click", handlePause);
 
-function handlePlankClick(e) {
+function handlePlaygroundClick(e) {
+  if (state.paused) return;
+
   const pgRect = elements.playground.getBoundingClientRect();
   const plankRect = elements.plank.getBoundingClientRect();
   const plankCenter = plankRect.left + plankRect.width / 2;
@@ -164,7 +169,6 @@ function landWeight(w) {
 // Settings
 
 function handleReset(e) {
-  e.preventDefault();
   state.weights = [];
   state.falling = [];
   document.querySelectorAll(".weight").forEach((w) => w.remove());
@@ -172,7 +176,6 @@ function handleReset(e) {
 }
 
 function handleUndo(e) {
-  e.preventDefault();
   if (state.weights.length > 0) {
     const last = state.weights.pop();
     last.element.remove();
@@ -180,30 +183,38 @@ function handleUndo(e) {
   }
 }
 
+function handlePause(e) {
+  state.paused = !state.paused;
+  elements.pauseBanner.classList.toggle("active", state.paused);
+}
+
 // Physics Simulation
 
 function animate() {
-  const plankRect = elements.plank.getBoundingClientRect();
-  const pgRect = elements.playground.getBoundingClientRect();
+  if (!state.paused) {
+    const plankRect = elements.plank.getBoundingClientRect();
+    const pgRect = elements.playground.getBoundingClientRect();
 
-  const pivotX = plankRect.left + plankRect.width / 2 - pgRect.left;
-  const pivotY = plankRect.top + plankRect.height / 2 - pgRect.top;
+    const pivotX = plankRect.left + plankRect.width / 2 - pgRect.left;
+    const pivotY = plankRect.top + plankRect.height / 2 - pgRect.top;
 
-  const { angle: currentAngle } = computeStats();
+    const { angle: currentAngle } = computeStats();
 
-  for (let i = state.falling.length - 1; i >= 0; i--) {
-    const w = state.falling[i];
-    w.vy += GRAVITY;
-    w.posY += w.vy;
-    w.element.style.top = `${w.posY - w.edge / 2}px`;
+    for (let i = state.falling.length - 1; i >= 0; i--) {
+      const w = state.falling[i];
+      w.vy += GRAVITY;
+      w.posY += w.vy;
+      w.element.style.top = `${w.posY - w.edge / 2}px`;
 
-    const surfaceY = getPlankSurfaceY(w.posX, pivotX, pivotY, currentAngle);
+      const surfaceY = getPlankSurfaceY(w.posX, pivotX, pivotY, currentAngle);
 
-    if (w.posY + w.edge / 2 >= surfaceY) {
-      landWeight(w);
-      state.falling.splice(i, 1);
+      if (w.posY + w.edge / 2 >= surfaceY) {
+        landWeight(w);
+        state.falling.splice(i, 1);
+      }
     }
   }
+
   requestAnimationFrame(animate);
 }
 animate();
