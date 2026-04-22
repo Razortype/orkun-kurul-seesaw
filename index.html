@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title></title>
+        <link rel="stylesheet" href="style.css" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <main>
+            <div class="container">
+                <section class="seesaw-box">
+                    <div class="ground-shadow"></div>
+                    <div id="playground" class="card">
+                        <div id="plank"></div>
+                        <div id="pivot"></div>
+                    </div>
+                </section>
+                <aside class="sidebar">
+                    <section class="card stats">
+                        <div class="stat">
+                            <span class="stat__label">Left Weight</span>
+                            <output class="stat__value" id="left-weight"
+                                >0 kg</output
+                            >
+                        </div>
+                        <div class="stat">
+                            <span class="stat__label">Right Weight</span>
+                            <output class="stat__value" id="right-weight"
+                                >0 kg</output
+                            >
+                        </div>
+                        <div class="stat">
+                            <span class="stat__label">Tilt Angle</span>
+                            <output class="stat__value" id="tilt-angle"
+                                >0°</output
+                            >
+                        </div>
+                        <div class="stat">
+                            <span class="stat__label">Net Torque</span>
+                            <output class="stat__value" id="net-torque"
+                                >0</output
+                            >
+                        </div>
+                        <div class="stat">
+                            <span class="stat__label">Left Count</span>
+                            <output class="stat__value" id="left-count"
+                                >0</output
+                            >
+                        </div>
+                        <div class="stat">
+                            <span class="stat__label">Right Count</span>
+                            <output class="stat__value" id="right-count"
+                                >0</output
+                            >
+                        </div>
+                    </section>
+
+                    <section class="card controls">
+                        <h2 class="controls__title">Controls</h2>
+
+                        <div class="controls__group">
+                            <button class="btn btn--primary" id="reset-btn">
+                                Reset
+                            </button>
+                            <button class="btn" id="undo-btn">Undo</button>
+                            <button class="btn" id="pause-btn">Pause</button>
+                        </div>
+
+                        <div class="controls__mode">
+                            <span class="controls__label">Weight Mode</span>
+
+                            <div class="controls__row">
+                                <div
+                                    class="controls__stepper"
+                                    id="fixed-stepper-wrapper"
+                                    hidden
+                                >
+                                    <button
+                                        class="btn btn--icon"
+                                        id="weight-decrease"
+                                    >
+                                        −
+                                    </button>
+                                    <output id="fixed-weight-value"
+                                        >5 kg</output
+                                    >
+                                    <button
+                                        class="btn btn--icon"
+                                        id="weight-increase"
+                                    >
+                                        +
+                                    </button>
+                                </div>
+
+                                <div class="controls__toggle">
+                                    <button
+                                        class="btn btn--toggle btn--active"
+                                        id="mode-random"
+                                    >
+                                        Random
+                                    </button>
+                                    <button
+                                        class="btn btn--toggle"
+                                        id="mode-fixed"
+                                    >
+                                        Fixed
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card log">
+                        <h2 class="log__title">Drop History</h2>
+                        <ul class="log__list" id="drop-log">
+                            <li class="log__empty">
+                                No drops yet. Click on the plank to start.
+                            </li>
+                        </ul>
+                    </section>
+                </aside>
+            </div>
+        </main>
+    </body>
+    <script src="script.js"></script>
+</html>
