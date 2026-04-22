@@ -140,9 +140,8 @@ function getPlankSurfaceY(x, pivotX, pivotY, angle) {
 function landWeight(w) {
   elements.plank.appendChild(w.element);
 
-  const plankHalfWidth = elements.plank.offsetWidth / 2;
-  const newLeft = plankHalfWidth + w.distance - w.edge / 2;
-  const newTop = -w.edge; // plank üstüne yapışık
+  const newLeft = PLANK_LENGTH / 2 + w.distance - w.edge / 2;
+  const newTop = -w.edge;
 
   w.element.style.left = `${newLeft}px`;
   w.element.style.top = `${newTop}px`;
