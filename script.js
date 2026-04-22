@@ -124,6 +124,12 @@ function renderStats() {
   elements.rightCount.innerText = `${stats.rightCount}`;
   elements.tiltAngle.innerText = `${stats.angle}°`;
   elements.netTorque.innerText = `${stats.netTorque} Nm`;
+
+  applyTilt(stats.angle);
+}
+
+function applyTilt(angle) {
+  elements.plank.style.transform = `translateX(-50%) rotate(${angle}deg)`;
 }
 
 function animate() {

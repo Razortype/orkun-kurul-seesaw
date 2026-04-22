@@ -305,6 +305,7 @@ body > main {
     background-color: var(--color-accent);
     border-radius: 4px;
     z-index: 9;
+    transition: transform 400ms ease-out;
 }
 
 #pivot {
