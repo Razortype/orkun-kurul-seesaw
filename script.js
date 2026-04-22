@@ -38,6 +38,7 @@ const elements = {
   undoBtn: document.getElementById("undo-btn"),
   pauseBtn: document.getElementById("pause-btn"),
   pauseBanner: document.getElementById("pause-banner"),
+  dropLog: document.getElementById("drop-log"),
 };
 
 // Register Events
@@ -163,6 +164,8 @@ function landWeight(w) {
     side: w.side,
   });
 
+  addLogEntry(w.weight, w.distance, w.side);
+
   renderStats();
 }
 
@@ -172,6 +175,7 @@ function handleReset(e) {
   state.weights = [];
   state.falling = [];
   document.querySelectorAll(".weight").forEach((w) => w.remove());
+  clearLog();
   renderStats();
 }
 
@@ -179,6 +183,16 @@ function handleUndo(e) {
   if (state.weights.length > 0) {
     const last = state.weights.pop();
     last.element.remove();
+
+    const items = elements.dropLog.querySelectorAll(".log__item");
+    if (items.length > 0) {
+      items[items.length - 1].remove();
+    }
+
+    if (items.length <= 1) {
+      clearLog();
+    }
+
     renderStats();
   }
 }
@@ -186,6 +200,26 @@ function handleUndo(e) {
 function handlePause(e) {
   state.paused = !state.paused;
   elements.pauseBanner.classList.toggle("active", state.paused);
+}
+
+// Logging
+
+function addLogEntry(weight, distance, side) {
+  const empty = elements.dropLog.querySelector(".log__empty");
+  if (empty) empty.remove();
+
+  const li = document.createElement("li");
+  li.classList.add("log__item", `log__item--${side}`);
+
+  const sign = distance < 0 ? "-" : "+";
+  const absDist = Math.abs(distance).toFixed(0);
+  li.innerText = `📦 ${weight}kg at ${sign}${absDist}px`;
+
+  elements.dropLog.appendChild(li);
+}
+
+function clearLog() {
+  elements.dropLog.innerHTML = `<li class="log__empty">No drops yet. Click on the plank to start.</li>`;
 }
 
 // Physics Simulation
