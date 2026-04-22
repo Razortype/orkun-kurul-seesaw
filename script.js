@@ -11,6 +11,16 @@ const COLORS = [
   "#d946ef",
   "#3b82f6",
 ];
+const MAX_ANGLE = 30;
+const PLANK_LENGTH = 400;
+
+// State
+const state = {
+  weights: [],
+  paused: false,
+  weightMode: "random",
+  fixedWeight: 5,
+};
 
 // Referances
 const playground = document.getElementById("playground");
@@ -32,23 +42,14 @@ function handlePlankClick(e) {
   const posY = e.clientY - pgRect.top;
   const weight = Math.floor(Math.random() * 10) + 1;
 
-  console.log({
-    pointer: {
-      x: distanceFromPivot,
-      absDistance: absDistance,
-      side: side,
-      isOverPlank: isOverPlank,
-    },
-    spawn: {
-      posX: posX,
-      posY: posY,
-      side: side,
-      weight: weight,
-    },
-  });
-
   if (isOverPlank) {
+    state.weights.push({
+      weight,
+      distance: distanceFromPivot,
+      side,
+    });
     spawnWeight(posX, posY, weight);
+    console.log(state.weights);
   }
 }
 
