@@ -64,6 +64,7 @@ function dropWeight(posX, posY, distance, weight, side) {
     element: weightElement,
     posX,
     posY,
+    vy: 0,
     edge,
     weight,
     distance,
@@ -166,7 +167,7 @@ function animate() {
 
   for (let i = state.falling.length - 1; i >= 0; i--) {
     const w = state.falling[i];
-    w.vy = (w.vy ?? 0) + GRAVITY;
+    w.vy += GRAVITY;
     w.posY += w.vy;
     w.element.style.top = `${w.posY - w.edge / 2}px`;
 
