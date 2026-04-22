@@ -30,6 +30,7 @@ function handlePlankClick(e) {
   const side = distanceFromPivot < 0 ? "left" : "right";
   const posX = e.clientX - pgRect.left;
   const posY = e.clientY - pgRect.top;
+  const weight = Math.floor(Math.random() * 10) + 1;
 
   console.log({
     pointer: {
@@ -42,19 +43,20 @@ function handlePlankClick(e) {
       posX: posX,
       posY: posY,
       side: side,
-      weight: 5,
+      weight: weight,
     },
   });
 
   if (isOverPlank) {
-    spawnWeight(posX, posY, 5);
+    spawnWeight(posX, posY, weight);
   }
 }
 
 function spawnWeight(posX, posY, weight) {
-  const edge = weight * 10;
+  const edge = 20 + weight * 4;
   const weightElement = document.createElement("div");
   weightElement.classList.add("weight");
+  weightElement.innerText = `${weight}kg`;
   weightElement.style.left = `${posX - edge / 2}px`;
   weightElement.style.top = `${posY - edge / 2}px`;
   weightElement.style.backgroundColor =
