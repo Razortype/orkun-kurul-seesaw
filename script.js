@@ -35,11 +35,13 @@ const elements = {
   leftCount: document.getElementById("left-count"),
   rightCount: document.getElementById("right-count"),
   resetBtn: document.getElementById("reset-btn"),
+  undoBtn: document.getElementById("undo-btn"),
 };
 
 // Register Events
 elements.playground.addEventListener("click", handlePlankClick);
 elements.resetBtn.addEventListener("click", handleReset);
+elements.undoBtn.addEventListener("click", handleUndo);
 
 function handlePlankClick(e) {
   const pgRect = elements.playground.getBoundingClientRect();
@@ -150,6 +152,7 @@ function landWeight(w) {
   w.element.style.top = `${newTop}px`;
 
   state.weights.push({
+    element: w.element,
     weight: w.weight,
     distance: w.distance,
     side: w.side,
@@ -166,6 +169,15 @@ function handleReset(e) {
   state.falling = [];
   document.querySelectorAll(".weight").forEach((w) => w.remove());
   renderStats();
+}
+
+function handleUndo(e) {
+  e.preventDefault();
+  if (state.weights.length > 0) {
+    const last = state.weights.pop();
+    last.element.remove();
+    renderStats();
+  }
 }
 
 // Physics Simulation
