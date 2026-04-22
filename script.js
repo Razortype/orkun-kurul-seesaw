@@ -13,10 +13,12 @@ const COLORS = [
 ];
 const MAX_ANGLE = 30;
 const PLANK_LENGTH = 400;
+const GRAVITY = 0.5;
 
 // State
 const state = {
   weights: [],
+  falling: [],
   paused: false,
   weightMode: "random",
   fixedWeight: 5,
@@ -51,18 +53,25 @@ function handlePlankClick(e) {
   const weight = Math.floor(Math.random() * 10) + 1;
 
   if (isOverPlank) {
-    state.weights.push({
-      weight,
-      distance: distanceFromPivot,
-      side,
-    });
-    spawnWeight(posX, posY, weight);
-    renderStats();
+    dropWeight(posX, posY, distanceFromPivot, weight, side);
   }
 }
 
-function spawnWeight(posX, posY, weight) {
+function dropWeight(posX, posY, distance, weight, side) {
   const edge = 20 + weight * 4;
+  const weightElement = spawnWeight(posX, posY, weight, edge);
+  state.falling.push({
+    element: weightElement,
+    posX,
+    posY,
+    edge,
+    weight,
+    distance,
+    side,
+  });
+}
+
+function spawnWeight(posX, posY, weight, edge) {
   const weightElement = document.createElement("div");
   weightElement.classList.add("weight");
   weightElement.innerText = `${weight}kg`;
@@ -73,6 +82,7 @@ function spawnWeight(posX, posY, weight) {
   weightElement.style.width = `${edge}px`;
   weightElement.style.height = `${edge}px`;
   playground.appendChild(weightElement);
+  return weightElement;
 }
 
 function computeStats() {
@@ -115,3 +125,30 @@ function renderStats() {
   elements.tiltAngle.innerText = `${stats.angle}°`;
   elements.netTorque.innerText = `${stats.netTorque} Nm`;
 }
+
+function animate() {
+  const plankRect = elements.plank.getBoundingClientRect();
+  const pgRect = elements.playground.getBoundingClientRect();
+  const plankTopY = plankRect.top - pgRect.top;
+
+  for (let i = state.falling.length - 1; i >= 0; i--) {
+    const w = state.falling[i];
+    w.vy = (w.vy ?? 0) + GRAVITY;
+    w.posY += w.vy;
+    w.element.style.top = `${w.posY - w.edge / 2}px`;
+
+    if (w.posY + w.edge / 2 >= plankTopY) {
+      w.posY = plankTopY - w.edge / 2;
+      w.element.style.top = `${w.posY - w.edge / 2}px`;
+      state.falling.splice(i, 1);
+      state.weights.push({
+        weight: w.weight,
+        distance: w.distance,
+        side: w.side,
+      });
+      renderStats();
+    }
+  }
+  requestAnimationFrame(animate);
+}
+animate();
