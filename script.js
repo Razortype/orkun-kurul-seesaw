@@ -23,15 +23,23 @@ const state = {
 };
 
 // Referances
-const playground = document.getElementById("playground");
-const plank = document.getElementById("plank");
+const elements = {
+  playground: document.getElementById("playground"),
+  plank: document.getElementById("plank"),
+  leftWeight: document.getElementById("left-weight"),
+  rightWeight: document.getElementById("right-weight"),
+  tiltAngle: document.getElementById("tilt-angle"),
+  netTorque: document.getElementById("net-torque"),
+  leftCount: document.getElementById("left-count"),
+  rightCount: document.getElementById("right-count"),
+};
 
 // Register Events
 playground.addEventListener("click", handlePlankClick);
 
 function handlePlankClick(e) {
-  const pgRect = playground.getBoundingClientRect();
-  const plankRect = plank.getBoundingClientRect();
+  const pgRect = elements.playground.getBoundingClientRect();
+  const plankRect = elements.plank.getBoundingClientRect();
   const plankCenter = plankRect.left + plankRect.width / 2;
   const distanceFromPivot = e.clientX - plankCenter;
   const absDistance = Math.abs(distanceFromPivot);
@@ -49,7 +57,7 @@ function handlePlankClick(e) {
       side,
     });
     spawnWeight(posX, posY, weight);
-    console.log(state.weights);
+    renderStats();
   }
 }
 
@@ -65,4 +73,45 @@ function spawnWeight(posX, posY, weight) {
   weightElement.style.width = `${edge}px`;
   weightElement.style.height = `${edge}px`;
   playground.appendChild(weightElement);
+}
+
+function computeStats() {
+  let leftWeight = 0,
+    rightWeight = 0;
+  let leftCount = 0,
+    rightCount = 0;
+  let totalTorque = 0;
+
+  for (const { weight, distance, side } of state.weights) {
+    if (side === "left") {
+      leftWeight += weight;
+      leftCount++;
+    } else {
+      rightWeight += weight;
+      rightCount++;
+    }
+    totalTorque += weight * distance;
+  }
+
+  const angle = Math.max(-MAX_ANGLE, Math.min(MAX_ANGLE, totalTorque / 10));
+
+  return {
+    leftWeight,
+    rightWeight,
+    leftCount,
+    rightCount,
+    netTorque: totalTorque,
+    angle,
+  };
+}
+
+function renderStats() {
+  const stats = computeStats();
+
+  elements.leftWeight.innerText = `${stats.leftWeight}kg`;
+  elements.rightWeight.innerText = `${stats.rightWeight}kg`;
+  elements.leftCount.innerText = `${stats.leftCount}`;
+  elements.rightCount.innerText = `${stats.rightCount}`;
+  elements.tiltAngle.innerText = `${stats.angle}°`;
+  elements.netTorque.innerText = `${stats.netTorque} Nm`;
 }
