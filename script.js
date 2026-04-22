@@ -122,8 +122,8 @@ function renderStats() {
   elements.rightWeight.innerText = `${stats.rightWeight}kg`;
   elements.leftCount.innerText = `${stats.leftCount}`;
   elements.rightCount.innerText = `${stats.rightCount}`;
-  elements.tiltAngle.innerText = `${stats.angle}°`;
-  elements.netTorque.innerText = `${stats.netTorque} Nm`;
+  elements.tiltAngle.innerText = `${stats.angle.toFixed(1)}°`;
+  elements.netTorque.innerText = `${stats.netTorque.toFixed(0)} Nm`;
 
   applyTilt(stats.angle);
 }
@@ -132,27 +132,50 @@ function applyTilt(angle) {
   elements.plank.style.transform = `translateX(-50%) rotate(${angle}deg)`;
 }
 
+function getPlankSurfaceY(x, pivotX, pivotY, angle) {
+  const radians = angle * (Math.PI / 180);
+  return pivotY + (x - pivotX) * Math.tan(radians);
+}
+
+function landWeight(w) {
+  elements.plank.appendChild(w.element);
+
+  const plankHalfWidth = elements.plank.offsetWidth / 2;
+  const newLeft = plankHalfWidth + w.distance - w.edge / 2;
+  const newTop = -w.edge; // plank üstüne yapışık
+
+  w.element.style.left = `${newLeft}px`;
+  w.element.style.top = `${newTop}px`;
+
+  state.weights.push({
+    weight: w.weight,
+    distance: w.distance,
+    side: w.side,
+  });
+
+  renderStats();
+}
+
 function animate() {
   const plankRect = elements.plank.getBoundingClientRect();
   const pgRect = elements.playground.getBoundingClientRect();
-  const plankTopY = plankRect.top - pgRect.top;
 
+  const pivotX = plankRect.left + plankRect.width / 2 - pgRect.left;
+  const pivotY = plankRect.top + plankRect.height / 2 - pgRect.top;
+
+  const { angle: currentAngle } = computeStats();
+  
   for (let i = state.falling.length - 1; i >= 0; i--) {
     const w = state.falling[i];
     w.vy = (w.vy ?? 0) + GRAVITY;
     w.posY += w.vy;
     w.element.style.top = `${w.posY - w.edge / 2}px`;
 
-    if (w.posY + w.edge / 2 >= plankTopY) {
-      w.posY = plankTopY - w.edge / 2;
-      w.element.style.top = `${w.posY - w.edge / 2}px`;
+    const surfaceY = getPlankSurfaceY(w.posX, pivotX, pivotY, currentAngle);
+
+    if (w.posY + w.edge / 2 >= surfaceY) {
+      landWeight(w);
       state.falling.splice(i, 1);
-      state.weights.push({
-        weight: w.weight,
-        distance: w.distance,
-        side: w.side,
-      });
-      renderStats();
     }
   }
   requestAnimationFrame(animate);
