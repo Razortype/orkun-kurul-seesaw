@@ -39,6 +39,12 @@ const elements = {
   pauseBtn: document.getElementById("pause-btn"),
   pauseBanner: document.getElementById("pause-banner"),
   dropLog: document.getElementById("drop-log"),
+  modeRandomBtn: document.getElementById("mode-random"),
+  modeFixedBtn: document.getElementById("mode-fixed"),
+  stepperWrapper: document.getElementById("fixed-stepper-wrapper"),
+  weightDecreaseBtn: document.getElementById("weight-decrease"),
+  weightIncreaseBtn: document.getElementById("weight-increase"),
+  fixedWeightValue: document.getElementById("fixed-weight-value"),
 };
 
 // Register Events
@@ -46,6 +52,14 @@ elements.playground.addEventListener("click", handlePlaygroundClick);
 elements.resetBtn.addEventListener("click", handleReset);
 elements.undoBtn.addEventListener("click", handleUndo);
 elements.pauseBtn.addEventListener("click", handlePause);
+elements.modeRandomBtn.addEventListener("click", () => setWeightMode("random"));
+elements.modeFixedBtn.addEventListener("click", () => setWeightMode("fixed"));
+elements.weightDecreaseBtn.addEventListener("click", () =>
+  adjustFixedWeight(-1),
+);
+elements.weightIncreaseBtn.addEventListener("click", () =>
+  adjustFixedWeight(1),
+);
 
 function handlePlaygroundClick(e) {
   if (state.paused) return;
@@ -60,7 +74,11 @@ function handlePlaygroundClick(e) {
   const side = distanceFromPivot < 0 ? "left" : "right";
   const posX = e.clientX - pgRect.left;
   const posY = e.clientY - pgRect.top;
-  const weight = Math.floor(Math.random() * 10) + 1;
+
+  const weight =
+    state.weightMode === "fixed"
+      ? state.fixedWeight
+      : Math.floor(Math.random() * 10) + 1;
 
   if (isOverPlank) {
     dropWeight(posX, posY, distanceFromPivot, weight, side);
@@ -200,6 +218,21 @@ function handleUndo(e) {
 function handlePause(e) {
   state.paused = !state.paused;
   elements.pauseBanner.classList.toggle("active", state.paused);
+}
+
+function setWeightMode(mode) {
+  state.weightMode = mode;
+
+  elements.modeRandomBtn.classList.toggle("btn--active", mode === "random");
+  elements.modeFixedBtn.classList.toggle("btn--active", mode === "fixed");
+
+  elements.stepperWrapper.hidden = mode !== "fixed";
+}
+
+function adjustFixedWeight(diff) {
+  const newWeight = Math.max(1, Math.min(10, state.fixedWeight + diff));
+  state.fixedWeight = newWeight;
+  elements.fixedWeightValue.innerText = `${newWeight} kg`;
 }
 
 // Logging
