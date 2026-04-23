@@ -29,6 +29,8 @@ const state = {
 const elements = {
   playground: document.getElementById("playground"),
   hoverPreview: document.getElementById("hover-preview"),
+  distanceIndicator: document.getElementById("distance-indicator"),
+  distanceValue: document.getElementById("distance-value"),
   nextWeightBox: document.getElementById("next-weight-box"),
   plank: document.getElementById("plank"),
   groundShadow: document.getElementById("ground-shadow"),
@@ -75,7 +77,8 @@ function handlePlaygroundClick(e) {
 
   const weight = getNextWeight();
   dropWeight(info.posX, info.posY, info.distanceFromPivot, weight, info.side);
-  elements.hoverPreview.hidden = true;
+  hideHoverPreview();
+  hideDistanceIndicator();
 }
 
 function getPlankProjection() {
@@ -332,6 +335,38 @@ function renderGroundShadow() {
   elements.groundShadow.style.width = `${proj.projectedHalfWidth * 2}px`;
 }
 
+function renderDistanceIndicator(info) {
+  const pivotXRel = info.projection.pivotXRelative;
+  const indicatorY = 40;
+
+  const lineLeft = Math.min(info.posX, pivotXRel);
+  const lineWidth = Math.abs(info.posX - pivotXRel);
+
+  elements.distanceIndicator.hidden = false;
+  elements.distanceIndicator.style.left = `${lineLeft}px`;
+  elements.distanceIndicator.style.top = `${indicatorY}px`;
+  elements.distanceIndicator.style.width = `${lineWidth}px`;
+
+  elements.distanceValue.innerText = `${info.distanceFromPivot}px`;
+}
+
+function hideDistanceIndicator() {
+  elements.distanceIndicator.hidden = true;
+}
+
+function renderHoverPreview(info) {
+  const edge = 20 + state.nextWeight * 4;
+  elements.hoverPreview.hidden = false;
+  elements.hoverPreview.style.width = `${edge}px`;
+  elements.hoverPreview.style.height = `${edge}px`;
+  elements.hoverPreview.style.left = `${info.posX - edge / 2}px`;
+  elements.hoverPreview.style.top = `${info.posY - edge / 2}px`;
+}
+
+function hideHoverPreview() {
+  elements.hoverPreview.hidden = true;
+}
+
 // Logging
 
 function addLogEntry(weight, distance, side) {
@@ -443,26 +478,25 @@ function animate() {
 
 function handlePlaygroundMove(e) {
   if (state.paused) {
-    elements.hoverPreview.hidden = true;
+    hideHoverPreview();
+    hideDistanceIndicator();
     return;
   }
 
   const info = getPointInfo(e.clientX, e.clientY);
   if (!info.isOverPlank) {
-    elements.hoverPreview.hidden = true;
+    hideHoverPreview();
+    hideDistanceIndicator();
     return;
   }
 
-  const edge = 20 + state.nextWeight * 4;
-  elements.hoverPreview.hidden = false;
-  elements.hoverPreview.style.width = `${edge}px`;
-  elements.hoverPreview.style.height = `${edge}px`;
-  elements.hoverPreview.style.left = `${info.posX - edge / 2}px`;
-  elements.hoverPreview.style.top = `${info.posY - edge / 2}px`;
+  renderHoverPreview(info);
+  renderDistanceIndicator(info);
 }
 
 function handlePlaygroundLeave() {
-  elements.hoverPreview.hidden = true;
+  hideHoverPreview();
+  hideDistanceIndicator();
 }
 
 // Initial setup
