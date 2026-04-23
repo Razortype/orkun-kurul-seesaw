@@ -22,11 +22,13 @@ const state = {
   paused: false,
   weightMode: "random",
   fixedWeight: 5,
+  nextWeight: null,
 };
 
 // Referances
 const elements = {
   playground: document.getElementById("playground"),
+  nextWeightBox: document.getElementById("next-weight-box"),
   plank: document.getElementById("plank"),
   leftWeight: document.getElementById("left-weight"),
   rightWeight: document.getElementById("right-weight"),
@@ -75,12 +77,8 @@ function handlePlaygroundClick(e) {
   const posX = e.clientX - pgRect.left;
   const posY = e.clientY - pgRect.top;
 
-  const weight =
-    state.weightMode === "fixed"
-      ? state.fixedWeight
-      : Math.floor(Math.random() * 10) + 1;
-
   if (isOverPlank) {
+    const weight = getNextWeight();
     dropWeight(posX, posY, distanceFromPivot, weight, side);
   }
 }
@@ -98,6 +96,26 @@ function dropWeight(posX, posY, distance, weight, side) {
     distance,
     side,
   });
+}
+
+function getNextWeight() {
+  const weight = state.nextWeight;
+
+  state.nextWeight = computeNextWeight();
+  renderNextWeight();
+
+  return weight;
+}
+
+function computeNextWeight() {
+  return state.weightMode === "fixed"
+    ? state.fixedWeight
+    : Math.floor(Math.random() * 10) + 1;
+}
+
+function renderNextWeight() {
+  elements.nextWeightBox.innerText = `${state.nextWeight} kg`;
+  elements.nextWeightBox.style.backgroundColor = COLORS[state.nextWeight - 1];
 }
 
 function spawnWeight(posX, posY, weight, edge) {
@@ -225,14 +243,19 @@ function setWeightMode(mode) {
 
   elements.modeRandomBtn.classList.toggle("btn--active", mode === "random");
   elements.modeFixedBtn.classList.toggle("btn--active", mode === "fixed");
-
   elements.stepperWrapper.hidden = mode !== "fixed";
+
+  state.nextWeight = computeNextWeight();
+  renderNextWeight();
 }
 
 function adjustFixedWeight(diff) {
   const newWeight = Math.max(1, Math.min(10, state.fixedWeight + diff));
   state.fixedWeight = newWeight;
   elements.fixedWeightValue.innerText = `${newWeight} kg`;
+
+  state.nextWeight = computeNextWeight();
+  renderNextWeight();
 }
 
 // Logging
@@ -282,4 +305,9 @@ function animate() {
 
   requestAnimationFrame(animate);
 }
+
+// Initial setup
+state.nextWeight = computeNextWeight();
+renderNextWeight();
+
 animate();

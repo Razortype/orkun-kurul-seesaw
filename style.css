@@ -296,6 +296,39 @@ body > main {
 }
 
 /* Playground Setup */
+#next-weight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 30px 20px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.next-weight__label {
+    position: absolute;
+    top: -20px;
+    left: 0;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-bold);
+    opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#next-weight .box {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: var(--font-size-body);
+    color: var(--color-text);
+}
+
 #plank {
     position: absolute;
     left: 50%;
