@@ -8,13 +8,13 @@ An interactive, physics-based seesaw built with pure HTML, CSS, and JavaScript. 
 
 ## How it works
 
-Click over the plank to drop a random weight (1–10 kg). The plank tilts based on torque. Weight × Distance from the pivot, clamped at ±30°. State is saved in `localStorage` so your session persists across reloads.
+Click over the plank to drop a random weight (1–10 kg). The plank tilts based on torque: weight times distance from the pivot, clamped at ±30°. State is saved in `localStorage` so your session persists across reloads.
 
 ## Features
 
-The simulation has the physics baseline. Weights fall with gravity, land on the tilted plank surface, and contribute to the torque. A smooth CSS transition animates the tilt up to ±30°.
+Weights fall with gravity, land on the tilted plank surface, and contribute to torque. A smooth CSS transition animates the tilt up to ±30°.
 
-The sidebar shows stats (left/right weight, net torque, tilt angle, counts) and a drop history log. Controls include Reset, Undo, and Pause (with an overlay banner).
+The sidebar shows left/right weight, net torque, tilt angle, and drop count. It also keeps a drop history log. Controls: Reset, Undo, and Pause (with an overlay banner).
 
 UI Enhancements:
 - Hover preview (dashed outline, sized to next weight)
