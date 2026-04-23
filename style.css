@@ -366,7 +366,7 @@ body > main {
     z-index: 9;
 }
 
-.ground-shadow {
+#ground-shadow {
     position: absolute;
     left: 50%;
     top: 85%;
@@ -376,6 +376,7 @@ body > main {
     background-color: rgba(0, 0, 0, 0.1);
     border-radius: 4px;
     z-index: 11;
+    transition: width 400ms ease-out;
 }
 
 #pause-banner {

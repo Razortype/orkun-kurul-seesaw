@@ -31,6 +31,7 @@ const elements = {
   hoverPreview: document.getElementById("hover-preview"),
   nextWeightBox: document.getElementById("next-weight-box"),
   plank: document.getElementById("plank"),
+  groundShadow: document.getElementById("ground-shadow"),
   leftWeight: document.getElementById("left-weight"),
   rightWeight: document.getElementById("right-weight"),
   tiltAngle: document.getElementById("tilt-angle"),
@@ -69,22 +70,59 @@ elements.weightIncreaseBtn.addEventListener("click", () =>
 function handlePlaygroundClick(e) {
   if (state.paused) return;
 
+  const info = getPointInfo(e.clientX, e.clientY);
+  if (!info.isOverPlank) return;
+
+  const weight = getNextWeight();
+  dropWeight(info.posX, info.posY, info.distanceFromPivot, weight, info.side);
+  elements.hoverPreview.hidden = true;
+}
+
+function getPlankProjection() {
   const pgRect = elements.playground.getBoundingClientRect();
   const plankRect = elements.plank.getBoundingClientRect();
-  const plankCenter = plankRect.left + plankRect.width / 2;
-  const distanceFromPivot = e.clientX - plankCenter;
-  const absDistance = Math.abs(distanceFromPivot);
-  const isOverPlank =
-    absDistance <= plankRect.width / 2 && e.clientY < plankRect.top;
-  const side = distanceFromPivot < 0 ? "left" : "right";
-  const posX = e.clientX - pgRect.left;
-  const posY = e.clientY - pgRect.top;
 
-  if (isOverPlank) {
-    const weight = getNextWeight();
-    dropWeight(posX, posY, distanceFromPivot, weight, side);
-    elements.hoverPreview.hidden = true;
-  }
+  const pivotX = plankRect.left + plankRect.width / 2;
+  const pivotY = plankRect.top + plankRect.height / 2;
+
+  const { angle } = computeStats();
+  const radians = angle * (Math.PI / 180);
+  const projectedHalfWidth = (PLANK_LENGTH / 2) * Math.abs(Math.cos(radians));
+
+  return {
+    pivotX,
+    pivotY,
+    projectedHalfWidth,
+    pivotXRelative: pivotX - pgRect.left,
+    pivotYRelative: pivotY - pgRect.top,
+    pgRect,
+    plankRect,
+    angle,
+  };
+}
+
+function getPointInfo(clientX, clientY) {
+  const proj = getPlankProjection();
+
+  const distanceFromPivot = clientX - proj.pivotX;
+  const absDistance = Math.abs(distanceFromPivot);
+  const side = distanceFromPivot < 0 ? "left" : "right";
+
+  const isOverPlank =
+    absDistance <= proj.projectedHalfWidth && clientY < proj.pivotY;
+
+  const posX = clientX - proj.pgRect.left;
+  const posY = clientY - proj.pgRect.top;
+
+  return {
+    distanceFromPivot,
+    absDistance,
+    side,
+    isOverPlank,
+    posX,
+    posY,
+    projection: proj,
+  };
 }
 
 function dropWeight(posX, posY, distance, weight, side) {
@@ -185,6 +223,7 @@ function renderStats() {
 
 function applyTilt(angle) {
   elements.plank.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+  renderGroundShadow();
 }
 
 function getPlankSurfaceY(x, pivotX, pivotY, angle) {
@@ -288,6 +327,11 @@ function renderPause() {
   elements.pauseBanner.classList.toggle("active", state.paused);
 }
 
+function renderGroundShadow() {
+  const proj = getPlankProjection();
+  elements.groundShadow.style.width = `${proj.projectedHalfWidth * 2}px`;
+}
+
 // Logging
 
 function addLogEntry(weight, distance, side) {
@@ -364,6 +408,7 @@ function renderAll() {
   renderPause();
   renderNextWeight();
   renderStats();
+  renderGroundShadow();
 }
 
 // Physics Simulation
@@ -402,28 +447,18 @@ function handlePlaygroundMove(e) {
     return;
   }
 
-  const pgRect = elements.playground.getBoundingClientRect();
-  const plankRect = elements.plank.getBoundingClientRect();
-  const plankCenter = plankRect.left + plankRect.width / 2;
-  const distanceFromPivot = e.clientX - plankCenter;
-  const absDistance = Math.abs(distanceFromPivot);
-  const isOverPlank =
-    absDistance <= plankRect.width / 2 && e.clientY < plankRect.top;
-
-  if (!isOverPlank) {
+  const info = getPointInfo(e.clientX, e.clientY);
+  if (!info.isOverPlank) {
     elements.hoverPreview.hidden = true;
     return;
   }
 
   const edge = 20 + state.nextWeight * 4;
-  const posX = e.clientX - pgRect.left;
-  const posY = e.clientY - pgRect.top;
-
   elements.hoverPreview.hidden = false;
   elements.hoverPreview.style.width = `${edge}px`;
   elements.hoverPreview.style.height = `${edge}px`;
-  elements.hoverPreview.style.left = `${posX - edge / 2}px`;
-  elements.hoverPreview.style.top = `${posY - edge / 2}px`;
+  elements.hoverPreview.style.left = `${info.posX - edge / 2}px`;
+  elements.hoverPreview.style.top = `${info.posY - edge / 2}px`;
 }
 
 function handlePlaygroundLeave() {
