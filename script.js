@@ -186,7 +186,7 @@ function handleUndo(e) {
 
     const items = elements.dropLog.querySelectorAll(".log__item");
     if (items.length > 0) {
-      items[items.length - 1].remove();
+      items[0].remove();
     }
 
     if (items.length <= 1) {
@@ -211,11 +211,9 @@ function addLogEntry(weight, distance, side) {
   const li = document.createElement("li");
   li.classList.add("log__item", `log__item--${side}`);
 
-  const sign = distance < 0 ? "-" : "+";
-  const absDist = Math.abs(distance).toFixed(0);
-  li.innerText = `📦 ${weight}kg at ${sign}${absDist}px`;
+  li.innerText = `📦 ${weight}kg => ${distance}px | ${side.toUpperCase()}`;
 
-  elements.dropLog.appendChild(li);
+  elements.dropLog.prepend(li);
 }
 
 function clearLog() {

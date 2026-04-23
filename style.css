@@ -236,7 +236,7 @@ body > main {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    max-height: 240px;
+    height: 240px;
 }
 
 .log__title {
@@ -250,10 +250,10 @@ body > main {
 .log__list {
     list-style: none;
     display: flex;
-    flex-direction: column-reverse; /* en yeni en üstte */
+    flex-direction: column;
     gap: 6px;
     overflow-y: auto;
-    padding-right: 4px; /* scrollbar için nefes */
+    padding-right: 4px;
 }
 
 .log__item {
@@ -263,6 +263,7 @@ body > main {
     border-left: 2px solid var(--color-accent);
     border-radius: var(--radius-sm);
     font-variant-numeric: tabular-nums;
+    animation: logAppear 300ms ease-out;
 }
 
 .log__item--left {
@@ -372,4 +373,17 @@ body > main {
     user-select: none;
     pointer-events: none;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Animations */
+
+@keyframes logAppear {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
