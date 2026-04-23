@@ -201,8 +201,8 @@ function landWeight(w) {
   });
 
   addLogEntry(w.weight, w.distance, w.side);
-
   renderStats();
+  saveState();
 }
 
 // Settings
@@ -213,6 +213,7 @@ function handleReset(e) {
   document.querySelectorAll(".weight").forEach((w) => w.remove());
   clearLog();
   renderStats();
+  saveState();
 }
 
 function handleUndo(e) {
@@ -230,6 +231,7 @@ function handleUndo(e) {
     }
 
     renderStats();
+    saveState();
   }
 }
 
@@ -238,15 +240,18 @@ function handlePause(e) {
   elements.pauseBanner.classList.toggle("active", state.paused);
 }
 
-function setWeightMode(mode) {
+function setWeightMode(mode, regenerateNext = true) {
   state.weightMode = mode;
 
   elements.modeRandomBtn.classList.toggle("btn--active", mode === "random");
   elements.modeFixedBtn.classList.toggle("btn--active", mode === "fixed");
   elements.stepperWrapper.hidden = mode !== "fixed";
 
-  state.nextWeight = computeNextWeight();
-  renderNextWeight();
+  if (regenerateNext) {
+    state.nextWeight = computeNextWeight();
+    renderNextWeight();
+  }
+  saveState();
 }
 
 function adjustFixedWeight(diff) {
@@ -256,6 +261,7 @@ function adjustFixedWeight(diff) {
 
   state.nextWeight = computeNextWeight();
   renderNextWeight();
+  saveState();
 }
 
 // Logging
@@ -274,6 +280,63 @@ function addLogEntry(weight, distance, side) {
 
 function clearLog() {
   elements.dropLog.innerHTML = `<li class="log__empty">No drops yet. Click on the plank to start.</li>`;
+}
+
+// Local Storage
+
+function saveState() {
+  const serializable = {
+    weights: state.weights.map(({ weight, distance, side }) => ({
+      weight,
+      distance,
+      side,
+    })),
+    weightMode: state.weightMode,
+    fixedWeight: state.fixedWeight,
+    nextWeight: state.nextWeight,
+  };
+  localStorage.setItem("seesaw-state", JSON.stringify(serializable));
+}
+
+function loadState() {
+  const saved = localStorage.getItem("seesaw-state");
+
+  try {
+    const parsed = JSON.parse(saved);
+    state.weightMode = parsed.weightMode ?? "random";
+    state.fixedWeight = parsed.fixedWeight ?? 5;
+    state.nextWeight = parsed.nextWeight ?? computeNextWeight();
+
+    for (const { weight, distance, side } of parsed.weights ?? []) {
+      spawnLandedWeight(weight, distance, side);
+    }
+  } catch (e) {
+    console.warn("Failed to load saved state", e);
+  }
+
+  if (state.nextWeight === null) {
+    state.nextWeight = computeNextWeight();
+  }
+}
+
+function spawnLandedWeight(weight, distance, side) {
+  const edge = 20 + weight * 4;
+  const weightElement = document.createElement("div");
+  weightElement.classList.add("weight");
+  weightElement.innerText = `${weight}kg`;
+  weightElement.style.width = `${edge}px`;
+  weightElement.style.height = `${edge}px`;
+  weightElement.style.backgroundColor = COLORS[weight - 1];
+  weightElement.style.left = `${PLANK_LENGTH / 2 + distance - edge / 2}px`;
+  weightElement.style.top = `${-edge}px`;
+  elements.plank.appendChild(weightElement);
+
+  state.weights.push({
+    element: weightElement,
+    weight,
+    distance,
+    side,
+  });
 }
 
 // Physics Simulation
@@ -307,7 +370,8 @@ function animate() {
 }
 
 // Initial setup
-state.nextWeight = computeNextWeight();
+loadState();
+setWeightMode(state.weightMode, false);
 renderNextWeight();
-
+renderStats();
 animate();
