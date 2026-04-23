@@ -25,7 +25,7 @@ const state = {
   nextWeight: null,
 };
 
-// Referances
+// References
 const elements = {
   playground: document.getElementById("playground"),
   nextWeightBox: document.getElementById("next-weight-box"),
@@ -84,10 +84,9 @@ function handlePlaygroundClick(e) {
 }
 
 function dropWeight(posX, posY, distance, weight, side) {
-  const edge = 20 + weight * 4;
-  const weightElement = spawnWeight(posX, posY, weight, edge);
+  const { element, edge } = spawnWeight(posX, posY, weight);
   state.falling.push({
-    element: weightElement,
+    element,
     posX,
     posY,
     vy: 0,
@@ -118,18 +117,23 @@ function renderNextWeight() {
   elements.nextWeightBox.style.backgroundColor = COLORS[state.nextWeight - 1];
 }
 
-function spawnWeight(posX, posY, weight, edge) {
-  const weightElement = document.createElement("div");
-  weightElement.classList.add("weight");
-  weightElement.innerText = `${weight}kg`;
-  weightElement.style.left = `${posX - edge / 2}px`;
-  weightElement.style.top = `${posY - edge / 2}px`;
-  weightElement.style.backgroundColor =
-    COLORS[Math.min(weight - 1, COLORS.length - 1)];
-  weightElement.style.width = `${edge}px`;
-  weightElement.style.height = `${edge}px`;
-  elements.playground.appendChild(weightElement);
-  return weightElement;
+function createWeightElement(weight) {
+  const edge = 20 + weight * 4;
+  const el = document.createElement("div");
+  el.classList.add("weight");
+  el.innerText = `${weight}kg`;
+  el.style.width = `${edge}px`;
+  el.style.height = `${edge}px`;
+  el.style.backgroundColor = COLORS[weight - 1];
+  return { element: el, edge };
+}
+
+function spawnWeight(posX, posY, weight) {
+  const { element, edge } = createWeightElement(weight);
+  element.style.left = `${posX - edge / 2}px`;
+  element.style.top = `${posY - edge / 2}px`;
+  elements.playground.appendChild(element);
+  return { element, edge };
 }
 
 function computeStats() {
@@ -216,7 +220,7 @@ function handleReset(e) {
   saveState();
 }
 
-function handleUndo(e) {
+function handleUndo() {
   if (state.weights.length > 0) {
     const last = state.weights.pop();
     last.element.remove();
@@ -235,7 +239,7 @@ function handleUndo(e) {
   }
 }
 
-function handlePause(e) {
+function handlePause() {
   state.paused = !state.paused;
   renderPause();
 }
@@ -317,17 +321,22 @@ function saveState() {
 function loadState() {
   const saved = localStorage.getItem("seesaw-state");
 
-  try {
-    const parsed = JSON.parse(saved);
-    state.weightMode = parsed.weightMode ?? "random";
-    state.fixedWeight = parsed.fixedWeight ?? 5;
-    state.nextWeight = parsed.nextWeight ?? computeNextWeight();
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
 
-    for (const { weight, distance, side } of parsed.weights ?? []) {
-      spawnLandedWeight(weight, distance, side);
+      if (parsed && typeof parsed === "object") {
+        state.weightMode = parsed.weightMode ?? "random";
+        state.fixedWeight = parsed.fixedWeight ?? 5;
+        state.nextWeight = parsed.nextWeight ?? null;
+
+        for (const { weight, distance, side } of parsed.weights ?? []) {
+          spawnLandedWeight(weight, distance, side);
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to load saved state", e);
     }
-  } catch (e) {
-    console.warn("Failed to load saved state", e);
   }
 
   if (state.nextWeight === null) {
@@ -336,23 +345,12 @@ function loadState() {
 }
 
 function spawnLandedWeight(weight, distance, side) {
-  const edge = 20 + weight * 4;
-  const weightElement = document.createElement("div");
-  weightElement.classList.add("weight");
-  weightElement.innerText = `${weight}kg`;
-  weightElement.style.width = `${edge}px`;
-  weightElement.style.height = `${edge}px`;
-  weightElement.style.backgroundColor = COLORS[weight - 1];
-  weightElement.style.left = `${PLANK_LENGTH / 2 + distance - edge / 2}px`;
-  weightElement.style.top = `${-edge}px`;
-  elements.plank.appendChild(weightElement);
+  const { element, edge } = createWeightElement(weight);
+  element.style.left = `${PLANK_LENGTH / 2 + distance - edge / 2}px`;
+  element.style.top = `${-edge}px`;
+  elements.plank.appendChild(element);
 
-  state.weights.push({
-    element: weightElement,
-    weight,
-    distance,
-    side,
-  });
+  state.weights.push({ element, weight, distance, side });
 }
 
 function renderAll() {
