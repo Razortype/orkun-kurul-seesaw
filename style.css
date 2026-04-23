@@ -296,6 +296,17 @@ body > main {
 }
 
 /* Playground Setup */
+
+#hover-preview {
+    position: absolute;
+    border: 2px dashed var(--color-text);
+    border-radius: var(--radius-sm);
+    opacity: 0.4;
+    pointer-events: none;
+    transition: opacity 150ms ease-out;
+    z-index: 5;
+}
+
 #next-weight {
     position: absolute;
     top: 0;

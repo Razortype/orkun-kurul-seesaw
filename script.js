@@ -28,6 +28,7 @@ const state = {
 // References
 const elements = {
   playground: document.getElementById("playground"),
+  hoverPreview: document.getElementById("hover-preview"),
   nextWeightBox: document.getElementById("next-weight-box"),
   plank: document.getElementById("plank"),
   leftWeight: document.getElementById("left-weight"),
@@ -51,6 +52,8 @@ const elements = {
 
 // Register Events
 elements.playground.addEventListener("click", handlePlaygroundClick);
+elements.playground.addEventListener("mousemove", handlePlaygroundMove);
+elements.playground.addEventListener("mouseleave", handlePlaygroundLeave);
 elements.resetBtn.addEventListener("click", handleReset);
 elements.undoBtn.addEventListener("click", handleUndo);
 elements.pauseBtn.addEventListener("click", handlePause);
@@ -80,6 +83,7 @@ function handlePlaygroundClick(e) {
   if (isOverPlank) {
     const weight = getNextWeight();
     dropWeight(posX, posY, distanceFromPivot, weight, side);
+    elements.hoverPreview.hidden = true;
   }
 }
 
@@ -341,6 +345,7 @@ function loadState() {
 
   if (state.nextWeight === null) {
     state.nextWeight = computeNextWeight();
+    return;
   }
 }
 
@@ -389,6 +394,40 @@ function animate() {
   }
 
   requestAnimationFrame(animate);
+}
+
+function handlePlaygroundMove(e) {
+  if (state.paused) {
+    elements.hoverPreview.hidden = true;
+    return;
+  }
+
+  const pgRect = elements.playground.getBoundingClientRect();
+  const plankRect = elements.plank.getBoundingClientRect();
+  const plankCenter = plankRect.left + plankRect.width / 2;
+  const distanceFromPivot = e.clientX - plankCenter;
+  const absDistance = Math.abs(distanceFromPivot);
+  const isOverPlank =
+    absDistance <= plankRect.width / 2 && e.clientY < plankRect.top;
+
+  if (!isOverPlank) {
+    elements.hoverPreview.hidden = true;
+    return;
+  }
+
+  const edge = 20 + state.nextWeight * 4;
+  const posX = e.clientX - pgRect.left;
+  const posY = e.clientY - pgRect.top;
+
+  elements.hoverPreview.hidden = false;
+  elements.hoverPreview.style.width = `${edge}px`;
+  elements.hoverPreview.style.height = `${edge}px`;
+  elements.hoverPreview.style.left = `${posX - edge / 2}px`;
+  elements.hoverPreview.style.top = `${posY - edge / 2}px`;
+}
+
+function handlePlaygroundLeave() {
+  elements.hoverPreview.hidden = true;
 }
 
 // Initial setup
