@@ -237,15 +237,12 @@ function handleUndo(e) {
 
 function handlePause(e) {
   state.paused = !state.paused;
-  elements.pauseBanner.classList.toggle("active", state.paused);
+  renderPause();
 }
 
 function setWeightMode(mode, regenerateNext = true) {
   state.weightMode = mode;
-
-  elements.modeRandomBtn.classList.toggle("btn--active", mode === "random");
-  elements.modeFixedBtn.classList.toggle("btn--active", mode === "fixed");
-  elements.stepperWrapper.hidden = mode !== "fixed";
+  renderWeightMode();
 
   if (regenerateNext) {
     state.nextWeight = computeNextWeight();
@@ -254,14 +251,33 @@ function setWeightMode(mode, regenerateNext = true) {
   saveState();
 }
 
-function adjustFixedWeight(diff) {
-  const newWeight = Math.max(1, Math.min(10, state.fixedWeight + diff));
-  state.fixedWeight = newWeight;
-  elements.fixedWeightValue.innerText = `${newWeight} kg`;
+function renderWeightMode() {
+  elements.modeRandomBtn.classList.toggle(
+    "btn--active",
+    state.weightMode === "random",
+  );
+  elements.modeFixedBtn.classList.toggle(
+    "btn--active",
+    state.weightMode === "fixed",
+  );
+  elements.stepperWrapper.hidden = state.weightMode !== "fixed";
+}
 
+function adjustFixedWeight(diff) {
+  if (state.weightMode !== "fixed") return;
+  state.fixedWeight = Math.max(1, Math.min(10, state.fixedWeight + diff));
+  renderFixedWeight();
   state.nextWeight = computeNextWeight();
   renderNextWeight();
   saveState();
+}
+
+function renderFixedWeight() {
+  elements.fixedWeightValue.innerText = `${state.fixedWeight} kg`;
+}
+
+function renderPause() {
+  elements.pauseBanner.classList.toggle("active", state.paused);
 }
 
 // Logging
@@ -339,6 +355,14 @@ function spawnLandedWeight(weight, distance, side) {
   });
 }
 
+function renderAll() {
+  renderWeightMode();
+  renderFixedWeight();
+  renderPause();
+  renderNextWeight();
+  renderStats();
+}
+
 // Physics Simulation
 
 function animate() {
@@ -371,7 +395,5 @@ function animate() {
 
 // Initial setup
 loadState();
-setWeightMode(state.weightMode, false);
-renderNextWeight();
-renderStats();
+renderAll();
 animate();
